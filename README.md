@@ -1,3 +1,7 @@
+# forum-app
+
+Ini adalah Submission Proyek: Membangun Aplikasi React dengan Redux
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
