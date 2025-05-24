@@ -7,12 +7,22 @@ import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
 import ProtectedRoute from './components/ProtectedRoute';
+import ThreadDetailPage from './pages/ThreadDetailPage';
+import CreateThreadPage from './pages/CreateThreadPage';
 
 function App() {
 
   return (
     <BrowserRouter>
       <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/threads/:threadId" element={<ThreadDetailPage />} />
+        </Route>
+
+        <Route element={<MainLayout />}>
+          <Route path="/create" element={<CreateThreadPage />} />
+        </Route>
+
         <Route element={<AuthLayout />}>
           <Route
             path="/login"
