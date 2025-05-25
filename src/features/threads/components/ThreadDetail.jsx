@@ -6,6 +6,8 @@ import {
   postComment,
   voteUpThread,
   voteDownThread,
+  voteUpComment,
+  voteDownComment,
 } from '../threadsSlice';
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import { formatWaktuLalu } from '../../../utils';
@@ -17,7 +19,6 @@ const ThreadDetail = () => {
 
   const { token, user } = useSelector((state) => state.auth);
   const userId = user?.id;
-
   const { detail: thread, loading, error } = useSelector((state) => state.threads);
 
   useEffect(() => {
@@ -31,14 +32,40 @@ const ThreadDetail = () => {
   const isUpvoted = thread.upVotesBy.includes(userId);
   const isDownvoted = thread.downVotesBy.includes(userId);
 
+  const handleCommentUpvote = (comment) => {
+    if (!token) return alert('Login untuk vote');
+    const payload = { threadId, commentId: comment.id, token, userId };
+    if (comment.upVotesBy.includes(userId)) {
+      dispatch(voteDownComment(payload));
+    } else {
+      dispatch(voteUpComment(payload));
+    }
+  };
+  const handleCommentDownvote = (comment) => {
+    if (!token) return alert('Login untuk vote');
+    const payload = { threadId, commentId: comment.id, token, userId };
+    if (comment.downVotesBy.includes(userId)) {
+      dispatch(voteUpComment(payload));
+    } else {
+      dispatch(voteDownComment(payload));
+    }
+  };
   const handleUpvote = () => {
     if (!token) return alert('Login untuk vote');
-    dispatch(voteUpThread({ id: thread.id, token, userId }));
+    if (isUpvoted) {
+      dispatch(voteDownThread({ id: thread.id, token, userId }));
+    } else {
+      dispatch(voteUpThread({ id: thread.id, token, userId }));
+    }
   };
 
   const handleDownvote = () => {
     if (!token) return alert('Login untuk vote');
-    dispatch(voteDownThread({ id: thread.id, token, userId }));
+    if (isDownvoted) {
+      dispatch(voteUpThread({ id: thread.id, token, userId }));
+    } else {
+      dispatch(voteDownThread({ id: thread.id, token, userId }));
+    }
   };
 
   return (
@@ -53,23 +80,26 @@ const ThreadDetail = () => {
       <div className="flex items-center text-sm text-gray-600 mt-4 gap-4">
         <span
           onClick={handleUpvote}
-          className={`flex items-center gap-1 cursor-pointer ${
-            isUpvoted ? 'text-black' : ''
-          }`}
+          className={`flex items-center gap-1 cursor-pointer ${isUpvoted ? 'text-black' : ''}`}
         >
           <FiThumbsUp /> {thread.upVotesBy.length}
         </span>
         <span
           onClick={handleDownvote}
-          className={`flex items-center gap-1 cursor-pointer ${
-            isDownvoted ? 'text-black' : ''
-          }`}
+          className={`flex items-center gap-1 cursor-pointer ${isDownvoted ? 'text-black' : ''}`}
         >
           <FiThumbsDown /> {thread.downVotesBy.length}
         </span>
-        <span>
-          Dibuat oleh <strong>{thread.owner.name}</strong>
-        </span>
+        <div className="flex items-center gap-2">
+          {thread.owner.avatar && (
+            <img
+              src={thread.owner.avatar}
+              alt={thread.owner.name}
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          )}
+          <span className="font-medium text-gray-700">Dibuat oleh <strong>{thread.owner.name}</strong></span>
+        </div>
         <span>{formatWaktuLalu(thread.createdAt)}</span>
       </div>
 
@@ -115,10 +145,24 @@ const ThreadDetail = () => {
               <span>{comment.owner.name}</span>
               <span className="text-gray-500 ml-auto text-xs">{formatWaktuLalu(comment.createdAt)}</span>
             </div>
-            <p className="text-sm mt-1 text-gray-800">{comment.content}</p>
+            <p className="text-sm mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: comment.content }}></p>
             <div className="flex items-center gap-4 text-xs text-gray-600 mt-2">
-              <span className="flex items-center gap-1"><FiThumbsUp /> {comment.upVotesBy.length}</span>
-              <span className="flex items-center gap-1"><FiThumbsDown /> {comment.downVotesBy.length}</span>
+              <span
+                className={`flex items-center gap-1 cursor-pointer ${
+                  comment.upVotesBy.includes(userId) ? 'text-black' : ''
+                }`}
+                onClick={() => handleCommentUpvote(comment)}
+              >
+                <FiThumbsUp /> {comment.upVotesBy.length}
+              </span>
+              <span
+                className={`flex items-center gap-1 cursor-pointer ${
+                  comment.downVotesBy.includes(userId) ? 'text-black' : ''
+                }`}
+                onClick={() => handleCommentDownvote(comment)}
+              >
+                <FiThumbsDown /> {comment.downVotesBy.length}
+              </span>
             </div>
           </div>
         ))}

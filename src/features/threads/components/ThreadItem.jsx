@@ -76,9 +76,16 @@ const ThreadItem = ({ thread }) => {
           <FiMessageCircle /> {totalComments}
         </div>
         <span>{formatWaktuLalu(createdAt)}</span>
-        <span>
-          Dibuat oleh <strong>{owner?.name || 'Anonim'}</strong>
-        </span>
+        <div className="flex items-center gap-2">
+          {owner?.avatar && (
+            <img
+              src={owner.avatar}
+              alt={owner.name}
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          )}
+          <span className="font-medium text-gray-700">{owner?.name || 'Anonim'}</span>
+        </div>
       </div>
     </div>
   );
@@ -93,6 +100,7 @@ ThreadItem.propTypes = {
     createdAt: PropTypes.string.isRequired,
     owner: PropTypes.shape({
       name: PropTypes.string.isRequired,
+      avatar: PropTypes.string,
     }).isRequired,
     upVotesBy: PropTypes.arrayOf(PropTypes.string),
     downVotesBy: PropTypes.arrayOf(PropTypes.string),

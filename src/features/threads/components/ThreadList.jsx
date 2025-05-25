@@ -1,12 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ThreadItem from './ThreadItem';
-import { useSelector } from 'react-redux';
 
-const ThreadList = () => {
-  const { items: threads, loading, error } = useSelector((state) => state.threads);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+const ThreadList = ({ threads }) => {
+  if (!threads.length) return <p>Tidak ada thread ditemukan.</p>;
 
   return (
     <>
@@ -15,6 +12,10 @@ const ThreadList = () => {
       ))}
     </>
   );
+};
+
+ThreadList.propTypes = {
+  threads: PropTypes.array.isRequired,
 };
 
 export default ThreadList;

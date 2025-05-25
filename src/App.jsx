@@ -9,6 +9,7 @@ import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
 import ProtectedRoute from './components/ProtectedRoute';
 import ThreadDetailPage from './pages/ThreadDetailPage';
 import CreateThreadPage from './pages/CreateThreadPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 
 function App() {
 
@@ -16,11 +17,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/threads/:threadId" element={<ThreadDetailPage />} />
+          <Route path="/threads/:threadId" element={
+            <ProtectedRoute>
+              <ThreadDetailPage />
+            </ProtectedRoute>
+          } />
         </Route>
 
         <Route element={<MainLayout />}>
-          <Route path="/create" element={<CreateThreadPage />} />
+          <Route path="/create" element={
+            <ProtectedRoute>
+              <CreateThreadPage />
+            </ProtectedRoute>
+          } />
+        </Route>
+
+        <Route element={<MainLayout />}>
+          <Route path="/leaderboards" element={
+            <ProtectedRoute>
+              <LeaderboardPage />
+            </ProtectedRoute>
+          } />
         </Route>
 
         <Route element={<AuthLayout />}>

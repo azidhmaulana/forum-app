@@ -1,18 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
-  getAllThreads,
   getThreadDetail,
   postComment as postCommentAPI,
   createThread as createThreadApi,
   upvoteThread,
-  downvoteThread
+  downvoteThread,
+  upvoteComment,
+  downvoteComment,
+  neutralVoteComment,
+  getAllThreadsWithUser
 } from './services/threadsApi';
 
 export const fetchThreads = createAsyncThunk(
   'threads/fetchThreads',
   async (_, { rejectWithValue }) => {
     try {
-      const threads = await getAllThreads();
+      const threads = await getAllThreadsWithUser();
       return threads;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Gagal mengambil data threads');
@@ -72,6 +75,42 @@ export const voteDownThread = createAsyncThunk(
   }
 );
 
+export const voteUpComment = createAsyncThunk(
+  'threads/voteUpComment',
+  async ({ threadId, commentId, token, userId }, { rejectWithValue }) => {
+    try {
+      await upvoteComment({ threadId, commentId, token });
+      return { threadId, commentId, userId };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message);
+    }
+  }
+);
+
+export const voteDownComment = createAsyncThunk(
+  'threads/voteDownComment',
+  async ({ threadId, commentId, token, userId }, { rejectWithValue }) => {
+    try {
+      await downvoteComment({ threadId, commentId, token });
+      return { threadId, commentId, userId };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message);
+    }
+  }
+);
+
+export const voteNeutralComment = createAsyncThunk(
+  'threads/neutralVoteComment',
+  async ({ threadId, commentId, token, userId }, { rejectWithValue }) => {
+    try {
+      await neutralVoteComment({ threadId, commentId, token });
+      return { threadId, commentId, userId };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message);
+    }
+  }
+);
+
 const threadsSlice = createSlice({
   name: 'threads',
   initialState: {
@@ -115,46 +154,78 @@ const threadsSlice = createSlice({
       .addCase(createThread.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
       })
-      .addCase(voteUpThread.fulfilled, (state, action) => {
-        const { id, userId } = action.payload;
+
+      // Optimistic Upvote
+      .addCase(voteUpThread.pending, (state, action) => {
+        const { id, userId } = action.meta.arg;
         const thread = state.items.find((t) => t.id === id);
         if (thread) {
-          if (thread.upVotesBy.includes(userId)) {
-            thread.upVotesBy = thread.upVotesBy.filter((v) => v !== userId); // netral
-          } else {
-            thread.downVotesBy = thread.downVotesBy.filter((v) => v !== userId);
-            thread.upVotesBy = [...thread.upVotesBy, userId];
-          }
+          thread.downVotesBy = thread.downVotesBy.filter((v) => v !== userId);
+          if (!thread.upVotesBy.includes(userId)) thread.upVotesBy.push(userId);
         }
-
         if (state.detail?.id === id) {
-          if (state.detail.upVotesBy.includes(userId)) {
-            state.detail.upVotesBy = state.detail.upVotesBy.filter((v) => v !== userId);
+          state.detail.downVotesBy = state.detail.downVotesBy.filter((v) => v !== userId);
+          if (!state.detail.upVotesBy.includes(userId)) state.detail.upVotesBy.push(userId);
+        }
+      })
+
+      .addCase(voteDownThread.pending, (state, action) => {
+        const { id, userId } = action.meta.arg;
+        const thread = state.items.find((t) => t.id === id);
+        if (thread) {
+          thread.upVotesBy = thread.upVotesBy.filter((v) => v !== userId);
+          if (!thread.downVotesBy.includes(userId)) thread.downVotesBy.push(userId);
+        }
+        if (state.detail?.id === id) {
+          state.detail.upVotesBy = state.detail.upVotesBy.filter((v) => v !== userId);
+          if (!state.detail.downVotesBy.includes(userId)) state.detail.downVotesBy.push(userId);
+        }
+      })
+
+      .addCase(voteUpThread.rejected, (state, action) => {
+        const { id, userId } = action.meta.arg;
+        const thread = state.items.find((t) => t.id === id);
+        if (thread) thread.upVotesBy = thread.upVotesBy.filter((v) => v !== userId);
+        if (state.detail?.id === id) state.detail.upVotesBy = state.detail.upVotesBy.filter((v) => v !== userId);
+      })
+
+      .addCase(voteDownThread.rejected, (state, action) => {
+        const { id, userId } = action.meta.arg;
+        const thread = state.items.find((t) => t.id === id);
+        if (thread) thread.downVotesBy = thread.downVotesBy.filter((v) => v !== userId);
+        if (state.detail?.id === id) state.detail.downVotesBy = state.detail.downVotesBy.filter((v) => v !== userId);
+      })
+
+      .addCase(voteUpComment.fulfilled, (state, action) => {
+        const { commentId, userId } = action.payload;
+        const comment = state.detail?.comments.find((c) => c.id === commentId);
+        if (comment) {
+          comment.downVotesBy = comment.downVotesBy.filter((v) => v !== userId);
+          if (!comment.upVotesBy.includes(userId)) {
+            comment.upVotesBy.push(userId);
           } else {
-            state.detail.downVotesBy = state.detail.downVotesBy.filter((v) => v !== userId);
-            state.detail.upVotesBy = [...state.detail.upVotesBy, userId];
+            comment.upVotesBy = comment.upVotesBy.filter((v) => v !== userId);
           }
         }
       })
-      .addCase(voteDownThread.fulfilled, (state, action) => {
-        const { id, userId } = action.payload;
-        const thread = state.items.find((t) => t.id === id);
-        if (thread) {
-          if (thread.downVotesBy.includes(userId)) {
-            thread.downVotesBy = thread.downVotesBy.filter((v) => v !== userId); // netral
+      .addCase(voteDownComment.fulfilled, (state, action) => {
+        const { commentId, userId } = action.payload;
+        const comment = state.detail?.comments.find((c) => c.id === commentId);
+        if (comment) {
+          comment.upVotesBy = comment.upVotesBy.filter((v) => v !== userId);
+          if (!comment.downVotesBy.includes(userId)) {
+            comment.downVotesBy.push(userId);
           } else {
-            thread.upVotesBy = thread.upVotesBy.filter((v) => v !== userId);
-            thread.downVotesBy = [...thread.downVotesBy, userId];
+            comment.downVotesBy = comment.downVotesBy.filter((v) => v !== userId);
           }
         }
-
-        if (state.detail?.id === id) {
-          if (state.detail.downVotesBy.includes(userId)) {
-            state.detail.downVotesBy = state.detail.downVotesBy.filter((v) => v !== userId);
-          } else {
-            state.detail.upVotesBy = state.detail.upVotesBy.filter((v) => v !== userId);
-            state.detail.downVotesBy = [...state.detail.downVotesBy, userId];
-          }
+      })
+      .addCase(voteNeutralComment.fulfilled, (state, action) => {
+        const { commentId, userId } = action.payload;
+        const comment = state.detail?.comments.find((c) => c.id === commentId);
+        if (comment) {
+          comment.upVotesBy = comment.upVotesBy.filter((v) => v !== userId);
+          comment.downVotesBy = comment.downVotesBy.filter((v) => v !== userId);
         }
       });
   },

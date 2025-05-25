@@ -10,6 +10,7 @@ const MainLayout = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

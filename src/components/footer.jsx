@@ -1,30 +1,35 @@
 import React from 'react';
 import { FiMessageCircle, FiLogOut } from 'react-icons/fi';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
+import Button from './Button';
 
-const Footer = (props) => {
-  const { handleLogout } = props;
+const Footer = ({ handleLogout }) => {
+  const navigate = useNavigate();
 
   return (
     <footer className="fixed bottom-0 w-full bg-white border-t shadow-md py-2 px-4 flex justify-around">
-      <button className="flex flex-col items-center text-xs">
-        <FiMessageCircle className="text-lg" />
-        Threads
-      </button>
-      <button className="flex flex-col items-center text-xs">
-        <FiLogOut className="text-lg" />
-        Leaderboards
-      </button>
-      <button onClick={handleLogout} className="flex flex-col items-center text-xs cursor-pointer hover:text-gray-900">
-        <FiLogOut className="text-lg" />
-        Logout
-      </button>
+      <Button
+        icon={FiMessageCircle}
+        label="Threads"
+        onClick={() => navigate('/')}
+      />
+      <Button
+        icon={FiLogOut}
+        label="Leaderboards"
+        onClick={() => navigate('/leaderboards')}
+      />
+      <Button
+        icon={FiLogOut}
+        label="Logout"
+        onClick={handleLogout}
+      />
     </footer>
   );
 };
 
 Footer.propTypes = {
-  handleLogout : PropTypes.func,
+  handleLogout: PropTypes.func.isRequired,
 };
 
 export default Footer;
