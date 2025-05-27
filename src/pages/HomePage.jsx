@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOwnProfile } from '../features/auth/services/authApi';
 import { FiPlus } from 'react-icons/fi';
 import ThreadList from '../features/threads/components/ThreadList';
 import { fetchThreads } from '../features/threads/threadsSlice';
 import { Link } from 'react-router-dom';
+import { fetchUserProfile } from '../features/auth/authSlice';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const { user, token } = useSelector((state) => state.auth);
   const [popularCategories, setPopularCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -21,38 +20,22 @@ const HomePage = () => {
     : threads;
 
   useEffect(() => {
-    const fetchThreadsData = async () => {
-      const threads = await dispatch(fetchThreads()).unwrap();
+    dispatch(fetchThreads()).unwrap().then((threads) => {
       const categoryCount = {};
       threads.forEach((t) => {
-        if (t.category in categoryCount) {
-          categoryCount[t.category]++;
-        } else {
-          categoryCount[t.category] = 1;
-        }
+        categoryCount[t.category] = (categoryCount[t.category] || 0) + 1;
       });
       const topCategories = Object.entries(categoryCount)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([cat]) => cat);
       setPopularCategories(topCategories);
-    };
-    fetchThreadsData();
+    });
   }, [dispatch]);
 
   useEffect(() => {
-    const getProfile = async () => {
-      try {
-        if (!user && token) {
-          const fetchedUser = await fetchOwnProfile(token);
-          dispatch({ type: 'auth/login/fulfilled', payload: { token, user: fetchedUser } });
-        }
-      } catch (err) {
-        console.error('Gagal memuat profil:', err);
-      }
-    };
-    getProfile();
-  }, [dispatch, token, user]);
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">

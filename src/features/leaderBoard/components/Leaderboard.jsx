@@ -4,7 +4,7 @@ import { fetchLeaderboards } from '../leaderboardSlice';
 
 const Leaderboard = () => {
   const dispatch = useDispatch();
-  const { users, loading, error } = useSelector((state) => state.leaderboard);
+  const { users, error } = useSelector((state) => state.leaderboard);
 
   useEffect(() => {
     dispatch(fetchLeaderboards());
@@ -16,7 +16,6 @@ const Leaderboard = () => {
         Klasmen Pengguna Aktif
       </h1>
 
-      {loading && <p>Memuat data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="flex justify-between px-2 text-gray-500 text-sm mb-2">

@@ -45,9 +45,14 @@ export const downvoteThread = async ({ id, token }) => {
 };
 
 export const neutralVoteThread = async ({ id, token }) => {
-  await axios.delete(`${API_BASE_URL}/threads/${id}/neutral-vote`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await axios.post(
+    `${API_BASE_URL}/threads/${id}/neutral-vote`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data.data.vote;
 };
 
 export const upvoteComment = async ({ threadId, commentId, token }) => {
@@ -67,13 +72,22 @@ export const downvoteComment = async ({ threadId, commentId, token }) => {
 };
 
 export const neutralVoteComment = async ({ threadId, commentId, token }) => {
-  await axios.post(
+  const response = await fetch(
     `${API_BASE_URL}/threads/${threadId}/comments/${commentId}/neutral-vote`,
-    {},
     {
-      headers: { Authorization: `Bearer ${token}` },
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
+
+  if (!response.ok) {
+    throw new Error('Gagal menetralkan vote komentar');
+  }
+
+  const result = await response.json();
+  return result.data.vote;
 };
 
 export const getAllThreadsWithUser = async () => {

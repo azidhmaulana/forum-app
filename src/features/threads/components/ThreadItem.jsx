@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { formatWaktuLalu } from '../../../utils';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { voteDownThread, voteUpThread } from '../threadsSlice';
+import { voteDownThread, voteUpThread, voteNeutralThread } from '../threadsSlice';
 
 const ThreadItem = ({ thread }) => {
   const {
@@ -14,26 +14,28 @@ const ThreadItem = ({ thread }) => {
     category,
     createdAt,
     owner,
-    upVotesBy = [],
-    downVotesBy = [],
     totalComments,
   } = thread;
 
   const dispatch = useDispatch();
   const { token, user } = useSelector((state) => state.auth);
-  const userId = user?.id;
-
-  const isUpvoted = upVotesBy.includes(userId);
-  const isDownvoted = downVotesBy.includes(userId);
 
   const handleUpvote = () => {
-    if (!token) return alert('Login untuk menyukai thread');
-    dispatch(voteUpThread({ id, token, userId }));
-  };
+    if (thread.upVotesBy.includes(user.id)) {
+      // Sudah upvote → netral
+      dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
+    } else {
+      dispatch(voteUpThread({ id: thread.id, token, userId: user.id }));
+    }
+  } ;
 
   const handleDownvote = () => {
-    if (!token) return alert('Login untuk tidak menyukai thread');
-    dispatch(voteDownThread({ id, token, userId }));
+    if (thread.downVotesBy.includes(user.id)) {
+      // Sudah downvote → netral
+      dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
+    } else {
+      dispatch(voteDownThread({ id: thread.id, token, userId: user.id }));
+    }
   };
 
   return (
@@ -55,22 +57,22 @@ const ThreadItem = ({ thread }) => {
 
       <div className="flex items-center flex-wrap gap-4 text-xs text-gray-600 mt-3">
         <div
-          className={`flex items-center gap-1 cursor-pointer ${
-            isUpvoted ? 'text-black' : 'text-gray-600'
-          }`}
           onClick={handleUpvote}
+          className={`cursor-pointer flex items-center gap-1 ${
+            thread.upVotesBy.includes(user.id) ? 'text-blue-500' : 'text-gray-400'
+          }`}
         >
           <FiThumbsUp />
-          {upVotesBy.length}
+          {thread.upVotesBy.length}
         </div>
         <div
-          className={`flex items-center gap-1 cursor-pointer ${
-            isDownvoted ? 'text-black' : 'text-gray-600'
-          }`}
           onClick={handleDownvote}
+          className={`flex items-center gap-1 cursor-pointer ${
+            thread.downVotesBy.includes(user.id) ? 'text-red-500' : 'text-gray-400'
+          }`}
         >
           <FiThumbsDown />
-          {downVotesBy.length}
+          {thread.downVotesBy.length}
         </div>
         <div className="flex items-center gap-1">
           <FiMessageCircle /> {totalComments}
