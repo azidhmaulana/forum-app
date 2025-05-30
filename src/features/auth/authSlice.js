@@ -1,50 +1,20 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginAPI, registerAPI, fetchOwnProfile } from './services/authApi';
-
-export const login = createAsyncThunk(
-  'auth/login',
-  async ({ email, password }, thunkAPI) => {
-    try {
-      return await loginAPI(email, password);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Login failed');
-    }
-  }
-);
-
-export const register = createAsyncThunk(
-  'auth/register',
-  async ({ name, email, password }, thunkAPI) => {
-    try {
-      return await registerAPI({ name, email, password });
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Register failed');
-    }
-  }
-);
-
-export const fetchUserProfile = createAsyncThunk(
-  'auth/fetchUserProfile',
-  async (_, { getState, rejectWithValue }) => {
-    const { token, user } = getState().auth;
-    if (user || !token) return null;
-
-    try {
-      const fetchedUser = await fetchOwnProfile(token);
-      return fetchedUser;
-    } catch (err) {
-      return rejectWithValue(err.message);
-    }
-  }
-);
+import { createSlice } from '@reduxjs/toolkit';
+import { login, register, fetchUserProfile } from './authAction';
 
 const tokenFromStorage = localStorage.getItem('token');
-const userFromStorage = localStorage.getItem('user');
+
+let userFromStorage = null;
+try {
+  const raw = localStorage.getItem('user');
+  if (raw) userFromStorage = JSON.parse(raw);
+} catch (e) {
+  console.warn('Invalid JSON in localStorage:user', e);
+}
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: userFromStorage ? JSON.parse(userFromStorage) : null,
+    user: userFromStorage,
     token: tokenFromStorage || null,
     loading: false,
     error: null,
@@ -53,6 +23,8 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.token = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
   },
   extraReducers: (builder) => {
@@ -72,6 +44,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -83,6 +56,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;

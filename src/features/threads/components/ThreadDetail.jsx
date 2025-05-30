@@ -9,8 +9,8 @@ import {
   voteUpComment,
   voteDownComment,
   voteNeutralThread,
-  voteNeutralComment
-} from '../threadsSlice';
+  voteNeutralComment,
+} from '../threadActions';
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import { formatWaktuLalu } from '../../../utils';
 
@@ -24,7 +24,6 @@ const ThreadDetail = () => {
   const userId = user?.id;
 
   useEffect(() => {
-    console.log('trigger fetchThreadDetail');
     dispatch(fetchThreadDetail(threadId));
   }, [dispatch, threadId]);
 
@@ -52,16 +51,14 @@ const ThreadDetail = () => {
 
   const handleUpvote = () => {
     if (thread.upVotesBy.includes(user.id)) {
-      // Sudah upvote → netral
       dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
     } else {
       dispatch(voteUpThread({ id: thread.id, token, userId: user.id }));
     }
-  } ;
+  };
 
   const handleDownvote = () => {
     if (thread.downVotesBy.includes(user.id)) {
-      // Sudah downvote → netral
       dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
     } else {
       dispatch(voteDownThread({ id: thread.id, token, userId: user.id }));
@@ -75,7 +72,10 @@ const ThreadDetail = () => {
       </span>
       <h1 className="text-gray-900 font-bold text-2xl mt-2">{thread.title}</h1>
 
-      <div className="text-gray-800 mt-2 prose" dangerouslySetInnerHTML={{ __html: thread.body }}></div>
+      <div
+        className="text-gray-800 mt-2 prose"
+        dangerouslySetInnerHTML={{ __html: thread.body }}
+      ></div>
 
       <div className="flex items-center text-sm text-gray-600 mt-4 gap-4">
         <div
@@ -104,7 +104,9 @@ const ThreadDetail = () => {
               className="w-6 h-6 rounded-full object-cover"
             />
           )}
-          <span className="font-medium text-gray-700">Dibuat oleh <strong>{thread.owner.name}</strong></span>
+          <span className="font-medium text-gray-700">
+            Dibuat oleh <strong>{thread.owner.name}</strong>
+          </span>
         </div>
         <span>{formatWaktuLalu(thread.createdAt)}</span>
       </div>
@@ -133,15 +135,16 @@ const ThreadDetail = () => {
           </>
         ) : (
           <p className="text-sm text-gray-600">
-            <Link to="/login" className="text-blue-600 underline">Login</Link> untuk memberi komentar
+            <Link to="/login" className="text-blue-600 underline">
+              Login
+            </Link>{' '}
+            untuk memberi komentar
           </p>
         )}
       </div>
 
       <div className="mt-6">
-        <h3 className="font-semibold text-md text-gray-800">
-          Komentar ({thread.comments.length})
-        </h3>
+        <h3 className="font-semibold text-md text-gray-800">Komentar ({thread.comments.length})</h3>
         {thread.comments.map((comment) => (
           <div key={comment.id} className="border-t pt-4 mt-4">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -149,9 +152,14 @@ const ThreadDetail = () => {
                 {comment.owner.name.slice(0, 2).toUpperCase()}
               </div>
               <span>{comment.owner.name}</span>
-              <span className="text-gray-500 ml-auto text-xs">{formatWaktuLalu(comment.createdAt)}</span>
+              <span className="text-gray-500 ml-auto text-xs">
+                {formatWaktuLalu(comment.createdAt)}
+              </span>
             </div>
-            <p className="text-sm mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: comment.content }}></p>
+            <p
+              className="text-sm mt-1 text-gray-800"
+              dangerouslySetInnerHTML={{ __html: comment.content }}
+            ></p>
             <div className="flex items-center gap-4 text-xs text-gray-600 mt-2">
               <span
                 className={`flex items-center gap-1 cursor-pointer ${

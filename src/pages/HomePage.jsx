@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiPlus } from 'react-icons/fi';
 import ThreadList from '../features/threads/components/ThreadList';
-import { fetchThreads } from '../features/threads/threadsSlice';
+import { fetchThreads } from '../features/threads/threadActions';
 import { Link } from 'react-router-dom';
-import { fetchUserProfile } from '../features/auth/authSlice';
+import { fetchUserProfile } from '../features/auth/authAction';
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -20,17 +20,19 @@ const HomePage = () => {
     : threads;
 
   useEffect(() => {
-    dispatch(fetchThreads()).unwrap().then((threads) => {
-      const categoryCount = {};
-      threads.forEach((t) => {
-        categoryCount[t.category] = (categoryCount[t.category] || 0) + 1;
+    dispatch(fetchThreads())
+      .unwrap()
+      .then((threads) => {
+        const categoryCount = {};
+        threads.forEach((t) => {
+          categoryCount[t.category] = (categoryCount[t.category] || 0) + 1;
+        });
+        const topCategories = Object.entries(categoryCount)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([cat]) => cat);
+        setPopularCategories(topCategories);
       });
-      const topCategories = Object.entries(categoryCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([cat]) => cat);
-      setPopularCategories(topCategories);
-    });
   }, [dispatch]);
 
   useEffect(() => {

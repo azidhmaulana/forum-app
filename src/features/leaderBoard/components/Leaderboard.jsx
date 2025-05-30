@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLeaderboards } from '../leaderboardSlice';
+import { fetchLeaderboards } from '../leaderboardAction';
 
 const Leaderboard = () => {
   const dispatch = useDispatch();
@@ -12,9 +12,7 @@ const Leaderboard = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 bg-white min-h-screen">
-      <h1 className="text-xl font-bold mb-6 text-gray-900 border-b pb-2">
-        Klasmen Pengguna Aktif
-      </h1>
+      <h1 className="text-xl font-bold mb-6 text-gray-900 border-b pb-2">Klasmen Pengguna Aktif</h1>
 
       {error && <p className="text-red-500">{error}</p>}
 
@@ -48,6 +46,7 @@ const Leaderboard = () => {
           return (
             <li
               key={user.user.id}
+              data-testid="leaderboard-item"
               className="flex justify-between items-center bg-white py-2 px-2 rounded border-b"
             >
               <div className="flex items-center gap-3">
@@ -56,9 +55,7 @@ const Leaderboard = () => {
                 >
                   {initials}
                 </div>
-                <span className="text-gray-800 text-sm font-medium">
-                  {user.user.name}
-                </span>
+                <span className="text-gray-800 text-sm font-medium">{user.user.name}</span>
               </div>
               <span className="text-gray-800 font-semibold">{user.score}</span>
             </li>

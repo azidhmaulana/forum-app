@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../authSlice';
+import { login } from '../authAction';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -29,15 +29,17 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-md">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
       <input
+        id="email"
         type="email"
         name="email"
         value={form.email}
         onChange={handleChange}
-        placeholder="Email"
+        placeholder="email"
         className="border px-3 py-2 w-full mb-3 rounded"
         required
       />
       <input
+        id="password"
         type="password"
         name="password"
         value={form.password}
@@ -47,15 +49,15 @@ const LoginForm = () => {
         required
       />
       <button
+        data-testid="login-btn"
         type="submit"
-        disabled={loading}
         className="bg-gray-800 text-white px-4 py-2 w-full rounded"
       >
-        {loading ? 'Logging in...' : 'Login'}
+        Login
       </button>
       {error && <p className="text-red-500 mt-2 text-sm text-center">{error}</p>}
       <p className="text-sm mt-4 text-center">
-      Belum punya akun?{' '}
+        Belum punya akun?{' '}
         <Link to="/register" className="text-blue-600 underline">
           Daftar di sini.
         </Link>

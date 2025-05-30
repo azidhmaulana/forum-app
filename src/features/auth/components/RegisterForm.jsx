@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { register } from '../authSlice';
+import { register } from '../authAction';
 import { useNavigate, Link } from 'react-router-dom';
 
 const RegisterForm = () => {
@@ -60,9 +60,9 @@ const RegisterForm = () => {
       </button>
       {error && <p className="text-red-500 mt-2 text-sm text-center">{error}</p>}
       <p className="text-sm mt-4 text-center">
-          Sudah punya akun?{' '}
+        Sudah punya akun?{' '}
         <Link to="/login" className="text-blue-600 underline">
-              Masuk di sini.
+          Masuk di sini.
         </Link>
       </p>
     </form>

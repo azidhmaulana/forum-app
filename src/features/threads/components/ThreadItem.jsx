@@ -4,34 +4,24 @@ import { Link } from 'react-router-dom';
 import { formatWaktuLalu } from '../../../utils';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { voteDownThread, voteUpThread, voteNeutralThread } from '../threadsSlice';
+import { voteDownThread, voteUpThread, voteNeutralThread } from '../threadActions';
 
 const ThreadItem = ({ thread }) => {
-  const {
-    id,
-    title,
-    body,
-    category,
-    createdAt,
-    owner,
-    totalComments,
-  } = thread;
+  const { id, title, body, category, createdAt, owner, totalComments } = thread;
 
   const dispatch = useDispatch();
   const { token, user } = useSelector((state) => state.auth);
 
   const handleUpvote = () => {
     if (thread.upVotesBy.includes(user.id)) {
-      // Sudah upvote → netral
       dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
     } else {
       dispatch(voteUpThread({ id: thread.id, token, userId: user.id }));
     }
-  } ;
+  };
 
   const handleDownvote = () => {
     if (thread.downVotesBy.includes(user.id)) {
-      // Sudah downvote → netral
       dispatch(voteNeutralThread({ id: thread.id, token, userId: user.id }));
     } else {
       dispatch(voteDownThread({ id: thread.id, token, userId: user.id }));
@@ -40,14 +30,10 @@ const ThreadItem = ({ thread }) => {
 
   return (
     <div key={id} className="border-b pb-6 mb-6">
-      <span className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">
-        #{category}
-      </span>
+      <span className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">#{category}</span>
 
       <Link to={`/threads/${id}`}>
-        <h3 className="text-blue-700 font-semibold mt-2 text-lg hover:underline">
-          {title}
-        </h3>
+        <h3 className="text-blue-700 font-semibold mt-2 text-lg hover:underline">{title}</h3>
       </Link>
 
       <div
@@ -101,9 +87,10 @@ ThreadItem.propTypes = {
     category: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
     owner: PropTypes.shape({
-      name: PropTypes.string.isRequired,
+      id: PropTypes.string,
+      name: PropTypes.string,
       avatar: PropTypes.string,
-    }).isRequired,
+    }),
     upVotesBy: PropTypes.arrayOf(PropTypes.string),
     downVotesBy: PropTypes.arrayOf(PropTypes.string),
     totalComments: PropTypes.number,

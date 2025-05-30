@@ -8,7 +8,6 @@ const Navbar = () => {
   const [showBar, setShowBar] = useState(false);
 
   useEffect(() => {
-    console.log(isLoadingLeaderBoard);
     if (isLoading || isLoadingLeaderBoard) {
       setShowBar(true);
     } else {
@@ -18,7 +17,7 @@ const Navbar = () => {
   }, [isLoading, isLoadingLeaderBoard]);
 
   return (
-    <>
+    <nav>
       <header className="bg-gray-800 text-white p-4 shadow sticky top-0 z-50">
         <h1 className="text-xl font-semibold">FORUM APP</h1>
       </header>
@@ -31,7 +30,7 @@ const Navbar = () => {
           ></div>
         </div>
       )}
-    </>
+    </nav>
   );
 };
 
