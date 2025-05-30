@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createThread } from '../threadActions';
+import { toast } from 'react-toastify';
 
 const CreateThread = () => {
   const [title, setTitle] = useState('');
@@ -17,9 +18,10 @@ const CreateThread = () => {
 
     try {
       await dispatch(createThread({ title, body, category, token })).unwrap();
+      toast.success('Berhasil !');
       navigate('/');
     } catch (err) {
-      alert(`Gagal membuat thread: ${err}`);
+      toast.error(`Gagal membuat thread: ${err}`);
     }
   };
 

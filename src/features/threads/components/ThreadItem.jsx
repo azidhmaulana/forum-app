@@ -7,10 +7,27 @@ import { useDispatch, useSelector } from 'react-redux';
 import { voteDownThread, voteUpThread, voteNeutralThread } from '../threadActions';
 
 const ThreadItem = ({ thread }) => {
-  const { id, title, body, category, createdAt, owner, totalComments } = thread;
+  if (
+    !thread ||
+    typeof thread !== 'object' ||
+    !thread.id ||
+    !thread.title ||
+    !thread.body ||
+    !thread.category ||
+    !thread.createdAt ||
+    !Array.isArray(thread.upVotesBy) ||
+    !Array.isArray(thread.downVotesBy)
+  ) {
+    return <div className="text-red-500 text-sm">Thread tidak valid atau tidak lengkap</div>;
+  }
+
+  const { id, title, body, category, createdAt, owner, totalComments = 0 } = thread;
 
   const dispatch = useDispatch();
   const { token, user } = useSelector((state) => state.auth);
+
+  const ownerName = owner?.name || 'Anonim';
+  const ownerAvatar = owner?.avatar || '/default-avatar.png';
 
   const handleUpvote = () => {
     if (thread.upVotesBy.includes(user.id)) {
@@ -32,7 +49,7 @@ const ThreadItem = ({ thread }) => {
     <div key={id} className="border-b pb-6 mb-6">
       <span className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">#{category}</span>
 
-      <Link to={`/threads/${id}`}>
+      <Link to={`/threads/${thread.id}`}>
         <h3 className="text-blue-700 font-semibold mt-2 text-lg hover:underline">{title}</h3>
       </Link>
 
@@ -45,7 +62,9 @@ const ThreadItem = ({ thread }) => {
         <div
           onClick={handleUpvote}
           className={`cursor-pointer flex items-center gap-1 ${
-            thread.upVotesBy.includes(user.id) ? 'text-blue-500' : 'text-gray-400'
+            Array.isArray(thread.upVotesBy) && user?.id && thread.upVotesBy.includes(user.id)
+              ? 'text-blue-500'
+              : 'text-gray-400'
           }`}
         >
           <FiThumbsUp />
@@ -53,8 +72,10 @@ const ThreadItem = ({ thread }) => {
         </div>
         <div
           onClick={handleDownvote}
-          className={`flex items-center gap-1 cursor-pointer ${
-            thread.downVotesBy.includes(user.id) ? 'text-red-500' : 'text-gray-400'
+          className={`cursor-pointer flex items-center gap-1 ${
+            Array.isArray(thread.downVotesBy) && user?.id && thread.downVotesBy.includes(user.id)
+              ? 'text-red-500'
+              : 'text-gray-400'
           }`}
         >
           <FiThumbsDown />
@@ -65,14 +86,8 @@ const ThreadItem = ({ thread }) => {
         </div>
         <span>{formatWaktuLalu(createdAt)}</span>
         <div className="flex items-center gap-2">
-          {owner?.avatar && (
-            <img
-              src={owner.avatar}
-              alt={owner.name}
-              className="w-6 h-6 rounded-full object-cover"
-            />
-          )}
-          <span className="font-medium text-gray-700">{owner?.name || 'Anonim'}</span>
+          <img src={ownerAvatar} alt={ownerName} className="w-6 h-6 rounded-full object-cover" />
+          <span className="font-medium text-gray-700">{ownerName}</span>
         </div>
       </div>
     </div>

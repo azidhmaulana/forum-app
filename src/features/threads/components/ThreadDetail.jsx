@@ -81,7 +81,9 @@ const ThreadDetail = () => {
         <div
           onClick={handleUpvote}
           className={`cursor-pointer flex items-center gap-1 ${
-            thread.upVotesBy.includes(user.id) ? 'text-blue-500' : 'text-gray-400'
+            Array.isArray(thread.upVotesBy) && user?.id && thread.upVotesBy.includes(user.id)
+              ? 'text-blue-500'
+              : 'text-gray-400'
           }`}
         >
           <FiThumbsUp />
@@ -90,7 +92,9 @@ const ThreadDetail = () => {
         <div
           onClick={handleDownvote}
           className={`flex items-center gap-1 cursor-pointer ${
-            thread.downVotesBy.includes(user.id) ? 'text-red-500' : 'text-gray-400'
+            Array.isArray(thread.downVotesBy) && user?.id && thread.downVotesBy.includes(user.id)
+              ? 'text-red-500'
+              : 'text-gray-400'
           }`}
         >
           <FiThumbsDown />

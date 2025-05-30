@@ -6,7 +6,7 @@ import { login } from '../authAction';
 const LoginForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, token } = useSelector((state) => state.auth);
+  const { error, token } = useSelector((state) => state.auth);
 
   const [form, setForm] = useState({ email: '', password: '' });
 
