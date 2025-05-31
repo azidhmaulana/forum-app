@@ -3,7 +3,7 @@ import { loginAPI, registerAPI, fetchOwnProfile } from './services/authApi';
 
 export const login = createAsyncThunk('auth/login', async ({ email, password }, thunkAPI) => {
   try {
-    return await loginAPI(email, password);
+    return await loginAPI(username, password);
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Login failed');
   }
